@@ -1,0 +1,118 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火车票识别</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result img {
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result .ticket-container {
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+        }
+        .result .ticket-container a {
+            display: block;
+            margin-top: 5px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .result .ticket-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>火车票识别</h1>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="uploadFile()">上传并处理</button>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请选择一个文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            data.ticket_paths.forEach(path => {
+                const ticketContainer = document.createElement('div');
+                ticketContainer.className = 'ticket-container';
+
+                const img = document.createElement('img');
+                img.src = `/download/${path.split('/').pop()}`;
+                img.style.width = '200px';
+                ticketContainer.appendChild(img);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = `/download/${path.split('/').pop()}`;
+                downloadLink.textContent = '下载';
+                ticketContainer.appendChild(downloadLink);
+
+                resultDiv.appendChild(ticketContainer);
+            });
+        }
+    </script>
+</body>
+</html>
